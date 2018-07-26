@@ -1,10 +1,8 @@
 import React, { Component } from "react";
-import { compose, withProps } from "recompose";
+import PropTypes from "prop-types";
 import { Meteor } from "meteor/meteor";
-import { Template } from "meteor/templating";
-import { Promise } from 'meteor/promise';
-import { Reaction, i18next, Logger } from "/client/api";
-import { Countries } from "/client/collections";
+import { Promise } from "meteor/promise";
+import { Reaction, Logger } from "/client/api";
 import * as Collections from "/lib/collections";
 import { registerComponent, composeWithTracker } from "@reactioncommerce/reaction-components";
 import PaypalButton from "../components/paypalButton";
@@ -14,7 +12,7 @@ class PaypalButtonContainer extends Component {
     super(props);
 
     this.state = {
-      environment: "production",
+      environment: "production"
     };
   }
 
@@ -28,17 +26,15 @@ class PaypalButtonContainer extends Component {
     });
   }
 
-  callWithPromise = () => {
-    return new Promise((resolve, reject) => {
-      Meteor.call("getNewExpressCheckoutToken", this.props.cartId, (error, result) => {
-        if (error) reject(error);
-        resolve(result);
-      });
+  callWithPromise = () => new Promise((resolve, reject) => {
+    Meteor.call("getNewExpressCheckoutToken", this.props.cartId, (error, result) => {
+      if (error) reject(error);
+      resolve(result);
     });
-  }
+  })
 
   buildPaymentMethod = (result, status, mode) => {
-    const packageData = this.props.packageData;
+    const { packageData } = this.props;
 
     const paymentMethod = {
       processor: "PaypalExpress",
@@ -74,8 +70,6 @@ class PaypalButtonContainer extends Component {
     Meteor.call("cart/submitPayment", paymentMethod, (payError, payResult) => {
       if (!payResult && payError) {
         Logger.warn(payError, "Error received during submitting Payment via Paypal");
-        showError(payError);
-        Session.set("guestCheckoutFlow", true);
       }
     });
 
@@ -84,50 +78,46 @@ class PaypalButtonContainer extends Component {
     });
   }
 
-  payment = () => {
-    return this.callWithPromise().then(function (response) {
-      return response.id;
-    });
-  }
+  payment = () => this.callWithPromise().then((response) => response.id)
 
-  onAuthorize = (data, actions) => {
-      return Meteor.call("confirmNewPaymentAuthorization", data.paymentID, data.payerID, (error, result) => {
-        if (error) {
-          console.log("Error: " + error);
-          return null;
-        }
+  onAuthorize = (data) => Meteor.call("confirmNewPaymentAuthorization", data.paymentID, data.payerID, (error, result) => {
+    if (error) {
+      Logger.warn(error, "Error");
+    }
 
-        if (result) {
-          this.paymentFinished(result);
-        }
-      });
-      }
+    if (result) {
+      this.paymentFinished(result);
+      return true;
+    }
+
+    return null;
+  })
 
   render() {
+    const onError = (error) =>
+      Logger.warn(error, "Error");
 
-  const onError = (error) =>
-    console.log('Error: ', error);
+    const onCancel = (data) =>
+      Logger.warn(data, "Cancelled");
 
-  const onCancel = (data) =>
-    console.log('Cancelled payment: ', data);
-
-  return (
-    <div>
-      <PaypalButton
-        cartId={this.props.cartId}
-        packageData={this.props.packageData}
-        env={this.state.environment}
-        commit={true}
-        onAuthorize={this.onAuthorize}
-        payment={this.payment}
-        onError={onError}
-        onCancel={onCancel}
-      />
-    </div>
-  );
+    return (
+      <div>
+        <PaypalButton
+          cartId={this.props.cartId}
+          packageData={this.props.packageData}
+          env={this.state.environment}
+          shouldCommit={true}
+          onAuthorize={this.onAuthorize}
+          payment={this.payment}
+          onError={onError}
+          onCancel={onCancel}
+        />
+      </div>
+    );
+  }
 }
-}
 
+/* eslint-disable require-jsdoc */
 function composer(props, onData) {
   const handle = Meteor.subscribe("Cart", Meteor.userId());
   if (!handle.ready()) {
@@ -135,7 +125,7 @@ function composer(props, onData) {
   }
   const cart = Collections.Cart.findOne();
 
-  const packages =  Meteor.subscribe("Packages", Reaction.getShopId());
+  const packages = Meteor.subscribe("Packages", Reaction.getShopId());
   if (!packages.ready()) {
     return;
   }
@@ -151,7 +141,6 @@ function composer(props, onData) {
     if (!error) {
       expressCheckoutSettings = settings;
     }
-
   });
 
   onData(null, {
@@ -160,6 +149,12 @@ function composer(props, onData) {
     packageData
   });
 }
+/* eslint-enable require-jsdoc */
+
+PaypalButtonContainer.propTypes = {
+  cartId: PropTypes.string,
+  packageData: PropTypes.object
+};
 
 export default composeWithTracker(composer)(PaypalButtonContainer);
 

@@ -1,11 +1,12 @@
+/* global paypal */
 import React, { Component } from "react";
-import ReactDOM from 'react-dom';
-import scriptLoader from 'react-async-script-loader';
+import PropTypes from "prop-types";
+import ReactDOM from "react-dom";
+import scriptLoader from "react-async-script-loader";
 import { Components } from "@reactioncommerce/reaction-components";
 
 
 class PaypalButton extends Component {
-
   constructor(props) {
     super(props);
 
@@ -23,13 +24,12 @@ class PaypalButton extends Component {
     if (isScriptLoaded && isScriptLoadSucceed) {
       this.setState({ showButton: true });
     }
-
   }
 
   componentWillReceiveProps(nextProps) {
     const {
       isScriptLoaded,
-      isScriptLoadSucceed,
+      isScriptLoadSucceed
     } = nextProps;
 
     const isLoadedButWasntLoadedBefore =
@@ -47,40 +47,42 @@ class PaypalButton extends Component {
   render() {
     const {
       env,
-      commit,
+      shouldCommit,
       onAuthorize,
       payment,
       onError,
-      onCancel,
+      onCancel
     } = this.props;
 
     const {
-      showButton,
+      showButton
     } = this.state;
 
     if (showButton) {
-      const PayPalButton = paypal.Button.driver('react', {React, ReactDOM});
+      const PayPalButton = paypal.Button.driver("react", { React, ReactDOM });
 
       const buttonStyle = {
-        layout: 'vertical',
-        size: 'responsive',
-        color: 'gold',
-        shape: 'rect',
+        layout: "vertical",
+        size: "responsive",
+        color: "gold",
+        shape: "rect",
         tagline: false,
-        label: 'pay'
+        label: "pay"
       };
 
       return (
         <div>
-          {showButton && <PayPalButton
-            env={env}
-            style={buttonStyle}
-            commit={commit}
-            payment={payment}
-            onAuthorize={onAuthorize}
-            onCancel={onCancel}
-            onError={onError}
-          />}
+          {showButton &&
+            <PayPalButton
+              env={env}
+              style={buttonStyle}
+              commit={shouldCommit}
+              payment={payment}
+              onAuthorize={onAuthorize}
+              onCancel={onCancel}
+              onError={onError}
+            />
+          }
         </div>
       );
     }
@@ -88,8 +90,18 @@ class PaypalButton extends Component {
     return (
       <Components.Loading />
     );
-
   }
 }
 
-export default scriptLoader('https://www.paypalobjects.com/api/checkout.js')(PaypalButton);
+PaypalButton.propTypes = {
+  env: PropTypes.string,
+  isScriptLoadSucceed: PropTypes.bool,
+  isScriptLoaded: PropTypes.bool,
+  onAuthorize: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
+  payment: PropTypes.func.isRequired,
+  shouldCommit: PropTypes.bool
+};
+
+export default scriptLoader("https://www.paypalobjects.com/api/checkout.js")(PaypalButton);
