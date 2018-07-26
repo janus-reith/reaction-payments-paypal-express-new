@@ -57,7 +57,6 @@ class PaypalButtonContainer extends Component {
   }
 
   paymentFinished = (result) => {
-    console.log(result);
     let status;
     let mode = "authorize";
     // Normalize status depending on results
@@ -87,7 +86,6 @@ class PaypalButtonContainer extends Component {
 
   payment = () => {
     return this.callWithPromise().then(function (response) {
-      console.log(response.id);
       return response.id;
     });
   }
@@ -95,25 +93,23 @@ class PaypalButtonContainer extends Component {
   onAuthorize = (data, actions) => {
       return Meteor.call("confirmNewPaymentAuthorization", data.paymentID, data.payerID, (error, result) => {
         if (error) {
-          console.log("error: " + error);
+          console.log("Error: " + error);
           return null;
         }
 
         if (result) {
-          console.log("result: " + result);
           this.paymentFinished(result);
         }
       });
       }
 
   render() {
-    console.log(this.props.expressCheckoutSettings);
 
   const onError = (error) =>
-    console.log('Erroneous payment OR failed to load script!', error);
+    console.log('Error: ', error);
 
   const onCancel = (data) =>
-    console.log('Cancelled payment!', data);
+    console.log('Cancelled payment: ', data);
 
   return (
     <div>
