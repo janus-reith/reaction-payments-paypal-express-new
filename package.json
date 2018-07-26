@@ -1,5 +1,5 @@
 {
-  "name": "meteor-paypal-express",
+  "name": "reaction-payments-paypal-express-new",
   "version": "1.0.0",
   "description": "A Reaction plugin that allows you to process payments using Paypal Express",
   "main": "register.js",
