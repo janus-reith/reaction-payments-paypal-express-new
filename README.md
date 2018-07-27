@@ -2,6 +2,8 @@
 A plugin for Reaction Commerce that allows you to process payments with Paypal Express, using the "Smart Buttons" rendered by their checkout.js script.
 Still heavily WIP, I take no legal responsibility on how you use this and do not recommend you to use it in production yet.
 
+![reaction_paypal_preview](https://user-images.githubusercontent.com/1831220/43331239-94ba91ec-91c5-11e8-9da6-9a47663717c6.jpg)
+
 # Important notice (at least for Shops doing Business in the US, maybe others aswell):
 This plugin is currently configured to capture a payment right after a customer authorized it.
 Please check if this complies with the laws of the country you are doing business in.
